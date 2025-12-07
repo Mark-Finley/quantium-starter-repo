@@ -18,23 +18,27 @@ def process_csv_files():
             
         with open(file, 'r') as f:
             reader = csv.DictReader(f)
+            # Strip whitespace from column names
+            reader.fieldnames = [field.strip() for field in reader.fieldnames]
             for row in reader:
+                # Create a new dict with stripped keys
+                clean_row = {k.strip(): v.strip() for k, v in row.items()}
                 # Strip whitespace from keys and values
-                product = row['product'].strip().lower()
+                product = clean_row['product'].lower()
                 
                 # Filter for pink morsel only
                 if product == 'pink morsel':
                     # Extract price and quantity
-                    price_str = row['price'].strip().replace('$', '')
+                    price_str = clean_row['price'].replace('$', '')
                     price = float(price_str)
-                    quantity = int(row['quantity'].strip())
+                    quantity = int(clean_row['quantity'])
                     
                     # Calculate sales
                     sales = price * quantity
                     
                     # Extract date and region
-                    date = row['date'].strip()
-                    region = row['region'].strip()
+                    date = clean_row['date']
+                    region = clean_row['region']
                     
                     output_rows.append({
                         'sales': sales,
