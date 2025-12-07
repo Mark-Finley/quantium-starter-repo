@@ -21,59 +21,114 @@ df = df.sort_values('date')
 daily_sales = df.groupby('date')['sales'].sum().reset_index()
 daily_sales = daily_sales.sort_values('date')
 
+# Styling tokens to keep the UI cohesive
+COLORS = {
+    'bg': 'linear-gradient(135deg, #f4f7fb 0%, #e8f0ff 100%)',
+    'card': '#ffffff',
+    'primary': '#1f77b4',
+    'accent': '#ff6b6b',
+    'text': '#2c3e50',
+    'muted': '#6b7280',
+}
+
 # Initialize the Dash app
 app = dash.Dash(__name__)
 
 # Define the app layout
 app.layout = html.Div([
     html.Div([
-        html.H1("Pink Morsel Sales Visualisation", style={
-            'textAlign': 'center',
-            'marginBottom': 30,
-            'marginTop': 20,
-            'color': '#333'
-        })
-    ]),
-    
-    html.Div([
         html.Div([
-            html.Label("Select Region:", style={'fontWeight': 'bold', 'marginRight': 10}),
-            dcc.Dropdown(
-                id='region-dropdown',
-                options=[
-                    {'label': 'All Regions', 'value': 'all'},
-                    {'label': 'North', 'value': 'north'},
-                    {'label': 'South', 'value': 'south'},
-                    {'label': 'East', 'value': 'east'},
-                    {'label': 'West', 'value': 'west'},
-                ],
-                value='all',
-                style={'width': '200px'}
+            html.H1("Pink Morsel Sales Visualisation", style={
+                'textAlign': 'center',
+                'margin': '0',
+                'color': COLORS['text'],
+                'fontWeight': '700',
+                'letterSpacing': '0.5px'
+            }),
+            html.P(
+                "Track daily sales and see the impact of the January 15, 2021 price change.",
+                style={
+                    'textAlign': 'center',
+                    'marginTop': '8px',
+                    'marginBottom': '24px',
+                    'color': COLORS['muted']
+                }
+            ),
+        ], style={'padding': '16px 24px 8px 24px'}),
+
+        html.Div([
+            html.Div([
+                html.Label("Filter by Region", style={
+                    'fontWeight': '700',
+                    'color': COLORS['text'],
+                    'display': 'block',
+                    'marginBottom': '8px',
+                    'letterSpacing': '0.4px'
+                }),
+                dcc.RadioItems(
+                    id='region-radio',
+                    options=[
+                        {'label': 'All', 'value': 'all'},
+                        {'label': 'North', 'value': 'north'},
+                        {'label': 'East', 'value': 'east'},
+                        {'label': 'South', 'value': 'south'},
+                        {'label': 'West', 'value': 'west'},
+                    ],
+                    value='all',
+                    inline=True,
+                    labelStyle={
+                        'marginRight': '16px',
+                        'padding': '6px 10px',
+                        'borderRadius': '12px',
+                        'border': f"1px solid {COLORS['muted']}",
+                        'color': COLORS['text'],
+                        'cursor': 'pointer'
+                    },
+                    inputStyle={
+                        'marginRight': '6px'
+                    },
+                    style={'padding': '8px 0'}
+                ),
+            ], style={
+                'background': COLORS['card'],
+                'borderRadius': '14px',
+                'padding': '16px 18px',
+                'boxShadow': '0 10px 30px rgba(17, 24, 39, 0.07)',
+                'border': '1px solid #e5e7eb'
+            }),
+        ], style={'marginBottom': '24px'}),
+
+        html.Div([
+            dcc.Graph(id='sales-chart', config={'displaylogo': False})
+        ], style={
+            'background': COLORS['card'],
+            'borderRadius': '14px',
+            'padding': '12px',
+            'boxShadow': '0 16px 40px rgba(17, 24, 39, 0.08)',
+            'border': '1px solid #e5e7eb'
+        }),
+
+        html.Div([
+            html.P(
+                "The dashed line marks the January 15, 2021 Pink Morsel price increase.",
+                style={'textAlign': 'center', 'color': COLORS['muted'], 'fontSize': '13px', 'margin': '18px 0 6px 0'}
             )
-        ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': 20, 'marginLeft': 20}),
-    ]),
-    
-    html.Div([
-        dcc.Graph(id='sales-chart')
-    ], style={'marginBottom': 30}),
-    
-    html.Div([
-        html.P(
-            "Note: The vertical line at January 15, 2021 indicates the date of the Pink Morsel price increase.",
-            style={'textAlign': 'center', 'color': '#666', 'fontSize': 12, 'marginBottom': 10}
-        )
-    ])
+        ])
+    ], style={
+        'maxWidth': '1200px',
+        'margin': '0 auto',
+        'padding': '28px 24px 36px 24px'
+    })
 ], style={
-    'fontFamily': 'Arial, sans-serif',
-    'maxWidth': '1200px',
-    'margin': '0 auto',
-    'padding': '20px'
+    'minHeight': '100vh',
+    'background': COLORS['bg'],
+    'fontFamily': '"Segoe UI", "Helvetica Neue", Arial, sans-serif'
 })
 
 # Callback to update the chart based on selected region
 @app.callback(
     Output('sales-chart', 'figure'),
-    Input('region-dropdown', 'value')
+    Input('region-radio', 'value')
 )
 def update_chart(selected_region):
     try:
